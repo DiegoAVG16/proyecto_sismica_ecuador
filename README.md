@@ -1,11 +1,12 @@
 # Proyecto: Actividad Sísmica Ecuador
 
-## Datos:
+## Información del Proyecto
 * **Nombre del Grupo:** Grupo 5
-* **Integrantes:**
-    * Israel López - Data Lead
-    * Jaime Sarabia - Product Lead
-    * Diego Valdivieso - Model Lead
+
+## 👥 Integrantes
+* [Israel López](https://github.com/israel6) - **Data Lead**
+* [Jaime Sarabia](https://github.com/maverickgoledu) - **Product Lead**
+* [Diego Valdivieso](https://github.com/DiegoAVG16) - **Model Lead**
 
 
 * **Caso:**  Actividad Sísmica Ecuador
