@@ -1,4 +1,4 @@
-# Proyecto: Actividad Sismica Ecuador
+# Proyecto: Actividad Sísmica Ecuador
 
 ## Datos:
 * **Nombre del Grupo:** Grupo 5
