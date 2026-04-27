@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+venv/
+ENV/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data (opcional - descomentar si no quieres subir datos)
+# data/raw/*.txt
+# data/processed/*.parquet
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reports temporales
+reports/*.html
+reports/*.png
+!reports/.gitkeep
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
