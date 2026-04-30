@@ -10,7 +10,6 @@ from streamlit_folium import st_folium
 # ── Configuración de página ────────────────────────────────────────────────
 st.set_page_config(
     page_title="Monitor Sísmico | IG-EPN Ecuador",
-    page_icon="📈",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -120,7 +119,7 @@ col_logo, col_tabs, col_space = st.columns([2, 3, 1])
 with col_logo:
     st.markdown("### 📈 Monitor Sísmico\n<small style='color:#888'>IG-EPN · ECUADOR</small>", unsafe_allow_html=True)
 with col_tabs:
-    tab_sel = st.radio("Vista", ["📊 Dashboard", "🎯 Predicciones"],
+    tab_sel = st.radio("Vista", ["Dashboard", "Predicciones"],
                        horizontal=True, label_visibility="collapsed")
 
 st.divider()
@@ -128,11 +127,11 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 #  DASHBOARD
 # ══════════════════════════════════════════════════════════════════════════════
-if tab_sel == "📊 Dashboard":
+if tab_sel == "Dashboard":
 
     # ── Filtros ────────────────────────────────────────────────────────────
     with st.container():
-        st.markdown("##### ⚙️ FILTROS")
+        st.markdown("##### FILTROS")
         fc1, fc2, fc3, fc4, fc5, fc6, fc7 = st.columns(7)
         with fc1:
             date_from = st.date_input("DESDE", value=pd.to_datetime("2024-04-24"))
@@ -194,7 +193,7 @@ if tab_sel == "📊 Dashboard":
     col_map, col_chart = st.columns(2)
 
     with col_map:
-        st.markdown(f'<div class="section-title">📍 Mapa de Eventos &nbsp;<span class="kpi-badge badge-blue">{total} eventos</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="section-title"> Mapa de Eventos &nbsp;<span class="kpi-badge badge-blue">{total} eventos</span></div>', unsafe_allow_html=True)
 
         @st.cache_data(show_spinner=False)
         def build_event_map(lats, lons, mags, depths, dates, regions):
@@ -246,7 +245,7 @@ if tab_sel == "📊 Dashboard":
         st_folium(m, height=460, use_container_width=True)
 
     with col_chart:
-        st.markdown('<div class="section-title">📊 Distribución de Magnitudes</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title"> Distribución de Magnitudes</div>', unsafe_allow_html=True)
         if total:
             df['mag_bin'] = (np.floor(df['magnitude'] * 10) / 10).round(1)
             bins = df.groupby('mag_bin').size().reset_index(name='count')
@@ -283,7 +282,7 @@ if tab_sel == "📊 Dashboard":
             st.info("Sin datos para los filtros seleccionados.")
 
     # ── Frecuencia mensual ─────────────────────────────────────────────────
-    st.markdown('<div class="section-title">📈 Frecuencia Mensual por Categoría</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"> Frecuencia Mensual por Categoría</div>', unsafe_allow_html=True)
     if total:
         df['ym'] = df['date'].dt.to_period('M').astype(str)
         monthly = df.groupby('ym').apply(lambda g: pd.Series({
@@ -322,7 +321,7 @@ if tab_sel == "📊 Dashboard":
 #  PREDICCIONES
 # ══════════════════════════════════════════════════════════════════════════════
 else:
-    st.markdown("##### 🔑 PARÁMETROS DEL MODELO")
+    st.markdown("##### PARÁMETROS DEL MODELO")
     pc1, pc2, pc3, pc4 = st.columns(4)
     with pc1:
         bandwidth   = st.slider("BANDWIDTH KDE",   0.1, 2.0, 0.3, 0.1)
@@ -423,7 +422,7 @@ else:
 
         return m, len(data)
 
-    st.markdown(f'<div class="section-title">🚨 Zonas de Riesgo Sísmico &nbsp;<span class="kpi-badge badge-red">Modelo KDE</span></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title"> Zonas de Riesgo Sísmico &nbsp;<span class="kpi-badge badge-red">Modelo KDE</span></div>', unsafe_allow_html=True)
 
     with st.spinner("Calculando zonas de riesgo..."):
         m_kde, total_kde = build_kde_map(bandwidth, risk_points, mag_min_kde, region_kde)
@@ -442,7 +441,7 @@ else:
             "basada en densidad histórica (KDE gaussiano con métrica haversine).")
 
     # ── Tendencia anual ────────────────────────────────────────────────────
-    st.markdown('<div class="section-title">📊 Tendencia Anual</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"> Tendencia Anual</div>', unsafe_allow_html=True)
     if total_kde:
         dk['year'] = dk['date'].dt.year
         by_year = dk.groupby('year').size().reset_index(name='count')
