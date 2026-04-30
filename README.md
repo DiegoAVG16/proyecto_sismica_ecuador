@@ -1,6 +1,6 @@
 # Proyecto: Actividad Sísmica Ecuador
 
-<<<<<<< HEAD
+
 ## Información del Proyecto
 * **Nombre del Grupo:** Grupo 5
 
@@ -8,28 +8,15 @@
 * [Israel López](https://github.com/israel6) - **Data Lead**
 * [Jaime Sarabia](https://github.com/maverickgoledu) - **Product Lead**
 * [Diego Valdivieso](https://github.com/DiegoAVG16) - **Model Lead**
-=======
-## 📋 Información del Equipo
 
-* **Nombre del Grupo:** Grupo 5
-* **Integrantes:**
-    * [Israel López](https://github.com/israel6) - Data Lead
-    * [Jaime Sarabia](https://github.com/jaimesarabia) - Product Lead
-    * [Diego Valdivieso](https://github.com/DiegoAVG16) - Model Lead
->>>>>>> 07f3db1 (Implementación completa del producto analítico: API FastAPI, pipeline de datos, documentación y mejoras en el dashboard)
-
-* **Caso:** Actividad Sísmica Ecuador
-* **Dataset:** [Catálogo Sísmico IG-EPN](https://www.igepn.edu.ec/solicitud-de-datos-sismicos)
-
-<<<<<<< HEAD
 * **Caso:**  Actividad Sísmica Ecuador
 * **Dataset:** [Catálogo Sísmico IG-EPN](https://www.igepn.edu.ec/solicitud-de-datos-sismicos)
 =======
 ---
 
-## 🎯 Actividad Práctica
+##  Actividad Práctica
 
-### 1. Entorno Virtual y Estructura de Carpetas ✅
+### 1. Entorno Virtual y Estructura de Carpetas 
 
 El proyecto cuenta con la siguiente estructura de carpetas:
 
@@ -53,22 +40,22 @@ proyecto_sismica_ecuador/
 └── README.md                  # Este archivo
 ```
 
-### 2. Pregunta de Negocio ✅
+### 2. Pregunta de Negocio 
 
 **¿Cómo podemos identificar y predecir las zonas de mayor riesgo sísmico en Ecuador para optimizar la asignación de recursos de prevención y respuesta ante desastres?**
 
 **Justificación:**
 
-Esta pregunta es relevante porque los sismos en Ecuador representan un riesgo significativo para:
+Es una pregunta muy relevante porque los sismos en Ecuador representan un riesgo significativo para:
 - **Vidas humanas**: Prevención de pérdidas y evacuaciones efectivas
 - **Economía**: Reducción de costos por daños a infraestructura
 - **Planificación urbana**: Regulación de construcción en zonas de riesgo
 - **Recursos**: Asignación estratégica de brigadas y equipos de respuesta
 - **Alerta temprana**: Mejora de sistemas de detección y notificación
 
-📄 Ver documento completo: [`docs/pregunta_negocio.md`](docs/pregunta_negocio.md)
+Ver documento completo: [`docs/pregunta_negocio.md`](docs/pregunta_negocio.md)
 
-### 3. Carga y Exploración del Dataset ✅
+### 3. Carga y Exploración del Dataset 
 
 #### Información del Dataset
 
@@ -118,9 +105,9 @@ df.describe()  # Estadísticas descriptivas
 - Centro: 45%
 - Sur: 20%
 
-📄 Ver análisis completo: [`notebooks/analisis_exploratorio.ipynb`](notebooks/analisis_exploratorio.ipynb)
+ Ver análisis completo: [`notebooks/analisis_exploratorio.ipynb`](notebooks/analisis_exploratorio.ipynb)
 
-### 4. Ficha del Dataset ✅
+### 4. Ficha del Dataset 
 
 Se han creado dos versiones de la ficha del dataset:
 
@@ -142,7 +129,7 @@ Se han creado dos versiones de la ficha del dataset:
 
 ---
 
-## 📊 Producto Analítico
+## Producto Analítico
 
 El proyecto incluye un sistema completo de análisis sísmico con:
 
@@ -177,11 +164,11 @@ uvicorn src.api:app --reload --port 8000
 2. **Gráfico de líneas** — frecuencia mensual por categoría de magnitud
 3. **Histograma** — distribución de magnitudes con líneas verticales en umbrales de categoría
 
-📄 **Documentación completa:** [`docs/producto_analitico.md`](docs/producto_analitico.md)
+**Documentación completa:** [`docs/producto_analitico.md`](docs/producto_analitico.md)
 
 ---
 
-## 🚀 Instalación y Ejecución
+## Instalación y Ejecución
 
 ### Requisitos Previos
 
@@ -215,7 +202,7 @@ La aplicación estará disponible en:
 
 ---
 
-## 📊 Funcionalidades
+## Funcionalidades
 
 ### Dashboard Principal
 
@@ -234,7 +221,7 @@ La aplicación estará disponible en:
 
 ---
 
-## 📦 Dependencias Principales
+## Dependencias Principales
 
 ```
 streamlit==1.56.0
@@ -250,7 +237,7 @@ Ver lista completa: [`requirements.txt`](requirements.txt)
 
 ---
 
-## 📈 Metodología
+## Metodología
 
 ### Clasificación de Regiones
 
@@ -273,7 +260,7 @@ Ver lista completa: [`requirements.txt`](requirements.txt)
 
 ---
 
-## 🔬 Análisis Exploratorio
+## Análisis Exploratorio
 
 El notebook [`notebooks/analisis_exploratorio.ipynb`](notebooks/analisis_exploratorio.ipynb) incluye:
 
@@ -288,7 +275,7 @@ El notebook [`notebooks/analisis_exploratorio.ipynb`](notebooks/analisis_explora
 
 ---
 
-## 📝 Documentación
+## Documentación
 
 - [`docs/pregunta_negocio.md`](docs/pregunta_negocio.md): Contexto, justificación y objetivos
 - [`docs/ficha_dataset_corta.md`](docs/ficha_dataset_corta.md): Ficha corta del dataset (actividad práctica)
@@ -297,7 +284,7 @@ El notebook [`notebooks/analisis_exploratorio.ipynb`](notebooks/analisis_explora
 
 ---
 
-## 🤝 Contribuciones
+## Contribuciones
 
 Este proyecto fue desarrollado como parte de una actividad académica. Para contribuciones:
 
@@ -309,18 +296,18 @@ Este proyecto fue desarrollado como parte de una actividad académica. Para cont
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Datos públicos del Instituto Geofísico - Escuela Politécnica Nacional (IG-EPN).
 
 ---
 
-## 📧 Contacto
+## Contacto
 
 - **Grupo 5** - Proyecto Actividad Sísmica Ecuador
 - **Repositorio**: [https://github.com/DiegoAVG16/proyecto_sismica_ecuador](https://github.com/DiegoAVG16/proyecto_sismica_ecuador)
 
 ---
 
-**Última actualización**: 27 de abril de 2026
->>>>>>> 07f3db1 (Implementación completa del producto analítico: API FastAPI, pipeline de datos, documentación y mejoras en el dashboard)
+**Última actualización**: 30 de abril de 2026
+Implementación completa del producto analítico: API FastAPI, pipeline de datos, documentación y mejoras en el dashboard
