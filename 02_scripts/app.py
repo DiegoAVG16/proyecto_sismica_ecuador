@@ -1,4 +1,5 @@
 import os
+from sys import path
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -91,29 +92,61 @@ st.markdown("""
 # ── Carga de datos ─────────────────────────────────────────────────────────
 @st.cache_data
 def load_data():
+    # 1. Rutas dinámicas basadas en la estructura de carpetas
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path = os.path.join(base, "data", "raw", "cat_origen_2012_2025.txt")
-    df = pd.read_csv(path, comment='#', skipinitialspace=True)
+    path = os.path.join(base, "01_datos_procesados", "sismos_procesados.parquet")
+    
+    # 2. Carga y limpieza inicial de columnas
+    df = pd.read_parquet(path)
     df.columns = df.columns.str.strip()
-    df['date']      = pd.to_datetime(df['time_value'], errors='coerce')
-    df['lat']       = pd.to_numeric(df['latitude_value'],  errors='coerce')
-    df['lon']       = pd.to_numeric(df['longitude_value'], errors='coerce')
-    df['depth']     = pd.to_numeric(df['depth_value'],     errors='coerce')
-    df['magnitude'] = pd.to_numeric(
-        df['magnitude_value_M'].fillna(df['magnitude_value_P']), errors='coerce'
-    )
-    def region(lat):
+
+    # 3. Mapeo flexible de columnas 
+    # Busca nombres comunes y los estandariza
+    rename_rules = {
+        'time_value': 'date', 
+        'latitude_value': 'lat', 
+        'longitude_value': 'lon', 
+        'depth_value': 'depth'
+    }
+    
+    for old_col, new_col in rename_rules.items():
+        if old_col in df.columns:
+            if new_col == 'date':
+                df['date'] = pd.to_datetime(df[old_col], errors='coerce')
+            else:
+                df[new_col] = pd.to_numeric(df[old_col], errors='coerce')
+
+    # 4. Lógica de Magnitud 
+    if 'magnitude' not in df.columns:
+        m_val = df['magnitude_value_M'] if 'magnitude_value_M' in df.columns else None
+        p_val = df['magnitude_value_P'] if 'magnitude_value_P' in df.columns else None
+        
+        if m_val is not None and p_val is not None:
+            df['magnitude'] = pd.to_numeric(m_val.fillna(p_val), errors='coerce')
+        elif m_val is not None:
+            df['magnitude'] = pd.to_numeric(m_val, errors='coerce')
+
+    # 5. Clasificación por Regiones 
+    def asignar_region(lat):
         if pd.isna(lat): return 'Desconocida'
-        if lat >= 0:     return 'Norte'
-        if lat >= -2:    return 'Centro'
+        if lat >= 0:    return 'Norte'
+        if lat >= -2:   return 'Centro'
         return 'Sur'
-    df['region'] = df['lat'].apply(region)
-    df = df.dropna(subset=['lat','lon','depth','magnitude','date']).copy()
-    df['date_str'] = df['date'].dt.strftime('%Y-%m-%d')
+    
+    if 'lat' in df.columns:
+        df['region'] = df['lat'].apply(asignar_region)
+
+    # 6. Limpieza final y formato para el Dashboard
+    # Eliminamos nulos en columnas críticas para Random Forest y KDE
+    columnas_criticas = ['lat', 'lon', 'depth', 'magnitude', 'date']
+    df = df.dropna(subset=[col for col in columnas_criticas if col in df.columns]).copy()
+    
+    if 'date' in df.columns:
+        df['date_str'] = df['date'].dt.strftime('%Y-%m-%d')
+
     return df
 
 df_all = load_data()
-
 # ── Cabecera ───────────────────────────────────────────────────────────────
 col_logo, col_tabs, col_space = st.columns([2, 3, 1])
 with col_logo:
