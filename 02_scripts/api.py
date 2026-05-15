@@ -1,33 +1,55 @@
 """
-API FastAPI para el Sistema de Monitoreo Sísmico de Ecuador
-Proporciona endpoints para consultar eventos sísmicos y estadísticas
+API FastAPI para el Sistema de Monitoreo Sísmico de Ecuador.
+
+Proporciona endpoints REST para consultar eventos sísmicos,
+estadísticas por región y estado del servicio.
+
+Autor: Grupo 5 - Proyecto Actividad Sísmica Ecuador
+Versión: 1.0.0
 """
 
 import os
+import logging
 from datetime import datetime
 from typing import Optional, List
+
 import pandas as pd
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+# ── Configuración de logging ───────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger(__name__)
+
+# ── Constantes ─────────────────────────────────────────────────────────────
+API_VERSION = "1.0.0"
+API_TITULO = "API Sísmica Ecuador"
+API_DESCRIPCION = "API para consultar eventos sísmicos registrados en Ecuador (2012-2025)"
+LIMITE_RESULTADOS_DEFAULT = 100
+LIMITE_RESULTADOS_MAX = 1000
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MODELOS DE DATOS
 # ══════════════════════════════════════════════════════════════════════════════
 
 class EventoSismico(BaseModel):
-    """Modelo de un evento sísmico"""
-    event: str
-    fecha: str
-    latitud: float
-    longitud: float
-    profundidad: float
-    magnitud: float
-    region: str
-    categoria: str
+    """Modelo de respuesta para un evento sísmico individual."""
+    event: str = Field(..., description="Identificador único del evento")
+    fecha: str = Field(..., description="Fecha y hora del evento (YYYY-MM-DD HH:MM:SS)")
+    latitud: float = Field(..., description="Latitud del epicentro")
+    longitud: float = Field(..., description="Longitud del epicentro")
+    profundidad: float = Field(..., description="Profundidad hipocentral en km")
+    magnitud: float = Field(..., description="Magnitud en escala Richter")
+    region: str = Field(..., description="Región geográfica (Norte/Centro/Sur)")
+    categoria: str = Field(..., description="Categoría (Ligero/Moderado/Fuerte)")
 
 class EstadisticasRegion(BaseModel):
-    """Estadísticas de una región"""
+    """Estadísticas agregadas de una región geográfica."""
     region: str
     total_eventos: int
     magnitud_media: float
@@ -35,23 +57,37 @@ class EstadisticasRegion(BaseModel):
     profundidad_media: float
 
 class RespuestaEventos(BaseModel):
-    """Respuesta con lista de eventos"""
-    total: int
+    """Respuesta paginada con lista de eventos sísmicos."""
+    total: int = Field(..., description="Número total de eventos retornados")
     eventos: List[EventoSismico]
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  CARGA DE DATOS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def cargar_datos():
-    """Carga y procesa el dataset de eventos sísmicos"""
+def cargar_datos() -> pd.DataFrame:
+    """
+    Carga y preprocesa el dataset de eventos sísmicos desde el archivo fuente.
+    
+    Returns:
+        pd.DataFrame: DataFrame con eventos sísmicos procesados y clasificados.
+        
+    Raises:
+        FileNotFoundError: Si el archivo de datos no se encuentra.
+    """
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     path = os.path.join(base, "00_datos_crudos", "cat_origen_2012_2025.txt")
+    
+    if not os.path.exists(path):
+        logger.error(f"Archivo de datos no encontrado: {path}")
+        raise FileNotFoundError(f"No se encontró: {path}")
+    
+    logger.info(f"Cargando datos desde: {path}")
     
     df = pd.read_csv(path, comment='#', skipinitialspace=True)
     df.columns = df.columns.str.strip()
     
-    # Convertir tipos
+    # Conversión de tipos de datos
     df['date'] = pd.to_datetime(df['time_value'], errors='coerce')
     df['lat'] = pd.to_numeric(df['latitude_value'], errors='coerce')
     df['lon'] = pd.to_numeric(df['longitude_value'], errors='coerce')
@@ -61,8 +97,8 @@ def cargar_datos():
         errors='coerce'
     )
     
-    # Clasificar región
-    def clasificar_region(lat):
+    # Clasificación geográfica por latitud
+    def clasificar_region(lat: float) -> str:
         if pd.isna(lat): return 'Desconocida'
         if lat >= 0: return 'Norte'
         if lat >= -2: return 'Centro'
@@ -70,8 +106,8 @@ def cargar_datos():
     
     df['region'] = df['lat'].apply(clasificar_region)
     
-    # Clasificar categoría
-    def clasificar_categoria(mag):
+    # Clasificación por intensidad de magnitud
+    def clasificar_categoria(mag: float) -> str:
         if pd.isna(mag): return 'Desconocida'
         if mag < 5: return 'Ligero'
         if mag < 6: return 'Moderado'
@@ -79,25 +115,32 @@ def cargar_datos():
     
     df['categoria'] = df['magnitude'].apply(clasificar_categoria)
     
-    # Limpiar datos
+    # Limpieza: eliminar registros incompletos
     df = df.dropna(subset=['lat', 'lon', 'depth', 'magnitude', 'date']).copy()
     df['date_str'] = df['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
     
+    logger.info(f"Datos cargados exitosamente: {len(df)} eventos válidos")
     return df
 
-# Cargar datos al iniciar
+# Cargar datos al iniciar la aplicación
+logger.info("Inicializando API Sísmica Ecuador...")
 df_global = cargar_datos()
+logger.info(f"API lista. {len(df_global)} eventos disponibles para consulta.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURACIÓN DE LA API
 # ══════════════════════════════════════════════════════════════════════════════
 
 app = FastAPI(
-    title="API Sísmica Ecuador",
-    description="API para consultar eventos sísmicos registrados en Ecuador (2012-2025)",
-    version="1.0.0",
+    title=API_TITULO,
+    description=API_DESCRIPCION,
+    version=API_VERSION,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    contact={
+        "name": "Grupo 5 - Proyecto Sísmica Ecuador",
+        "url": "https://github.com/DiegoAVG16/proyecto_sismica_ecuador"
+    }
 )
 
 # Configurar CORS
@@ -115,16 +158,18 @@ app.add_middleware(
 
 @app.get("/", tags=["General"])
 def root():
-    """Endpoint raíz con información de la API"""
+    """Endpoint raíz con información general de la API y enlaces útiles."""
     return {
-        "nombre": "API Sísmica Ecuador",
-        "version": "1.0.0",
-        "descripcion": "API para consultar eventos sísmicos del IG-EPN",
+        "nombre": API_TITULO,
+        "version": API_VERSION,
+        "descripcion": "API REST para consultar eventos sísmicos del IG-EPN",
         "total_eventos": len(df_global),
         "periodo": "2012-2025",
         "endpoints": {
             "eventos": "/sismos/query",
             "estadisticas": "/sismos/stats",
+            "regiones": "/sismos/regiones",
+            "salud": "/health",
             "documentacion": "/docs"
         }
     }

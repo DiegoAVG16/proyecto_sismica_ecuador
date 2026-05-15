@@ -8,9 +8,29 @@ import plotly.graph_objects as go
 import folium
 from streamlit_folium import st_folium
 
+# ── Constantes de configuración ────────────────────────────────────────────
+TITULO_APP = "Monitor Sísmico | IG-EPN Ecuador"
+CENTRO_MAPA_LAT = -1.83
+CENTRO_MAPA_LON = -78.18
+ZOOM_INICIAL = 6
+
+# Umbrales de clasificación sísmica
+MAG_MODERADO = 5.0
+MAG_FUERTE = 6.0
+
+# Colores del sistema de alertas
+COLOR_LIGERO = "#4ade80"
+COLOR_MODERADO = "#f97316"
+COLOR_FUERTE = "#ef4444"
+COLOR_PRINCIPAL = "#6366f1"
+
+# Límites de muestreo para rendimiento del mapa
+MAX_PUNTOS_MAPA = 500
+MAX_PUNTOS_HISTORICOS = 300
+
 # ── Configuración de página ────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Monitor Sísmico | IG-EPN Ecuador",
+    page_title=TITULO_APP,
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -91,7 +111,16 @@ st.markdown("""
 
 # ── Carga de datos ─────────────────────────────────────────────────────────
 @st.cache_data
-def load_data():
+def load_data() -> pd.DataFrame:
+    """
+    Carga y preprocesa el dataset de sismos desde el archivo Parquet.
+    
+    Realiza mapeo de columnas, conversión de tipos y clasificación
+    regional. Utiliza cache de Streamlit para evitar recargas innecesarias.
+    
+    Returns:
+        pd.DataFrame: Dataset limpio y listo para visualización.
+    """
     # 1. Rutas dinámicas basadas en la estructura de carpetas
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     path = os.path.join(base, "01_datos_procesados", "sismos_procesados.parquet")
@@ -127,7 +156,8 @@ def load_data():
             df['magnitude'] = pd.to_numeric(m_val, errors='coerce')
 
     # 5. Clasificación por Regiones 
-    def asignar_region(lat):
+    def asignar_region(lat: float) -> str:
+        """Asigna región geográfica basada en la latitud del epicentro."""
         if pd.isna(lat): return 'Desconocida'
         if lat >= 0:    return 'Norte'
         if lat >= -2:   return 'Centro'
@@ -230,14 +260,16 @@ if tab_sel == "Dashboard":
 
         @st.cache_data(show_spinner=False)
         def build_event_map(lats, lons, mags, depths, dates, regions):
-            m = folium.Map(location=[-1.83, -78.18], zoom_start=6,
+            """Construye mapa Folium con marcadores circulares para cada evento sísmico."""
+            m = folium.Map(location=[CENTRO_MAPA_LAT, CENTRO_MAPA_LON], zoom_start=ZOOM_INICIAL,
                            tiles="CartoDB positron")
             for lat, lon, mag, dep, dt, reg in zip(lats, lons, mags, depths, dates, regions):
-                color = "#4ade80"
-                if mag >= 6:   color = "#ef4444"
-                elif mag >= 5: color = "#f97316"
+                # Asignar color según nivel de magnitud
+                color = COLOR_LIGERO
+                if mag >= MAG_FUERTE:   color = COLOR_FUERTE
+                elif mag >= MAG_MODERADO: color = COLOR_MODERADO
 
-                if mag >= 6:
+                if mag >= MAG_FUERTE:
                     cat = "Fuerte"
                     nivel = "🔴 FUERTE"
                 elif mag >= 5:
@@ -423,7 +455,7 @@ elif tab_sel == "Análisis de Patrones":
         m_patron = folium.Map(location=[-1.83, -78.18], zoom_start=6, tiles="CartoDB positron")
         
         # Mostrar solo una muestra si son demasiados para no ralentizar
-        sample_p = dp.sample(min(500, len(dp)), random_state=42) if len(dp) > 500 else dp
+        sample_p = dp.sample(min(MAX_PUNTOS_MAPA, len(dp)), random_state=42) if len(dp) > MAX_PUNTOS_MAPA else dp
         
         for _, row in sample_p.iterrows():
             folium.CircleMarker(
@@ -474,17 +506,29 @@ else:
 
     # ── Mapa KDE ───────────────────────────────────────────────────────────
     @st.cache_data(show_spinner=False)
-    def build_kde_map(bw, n_risk, mag_min_k, reg):
+    def build_kde_map(bw: float, n_risk: int, mag_min_k: float, reg: str):
+        """
+        Construye mapa de zonas de riesgo usando estimación de densidad kernel (KDE).
+        
+        Args:
+            bw: Bandwidth del kernel gaussiano.
+            n_risk: Número de puntos de riesgo a evaluar.
+            mag_min_k: Magnitud mínima para incluir en el análisis.
+            reg: Región a filtrar ('Todas' para incluir todo).
+            
+        Returns:
+            tuple: (mapa Folium, total de eventos usados)
+        """
         data = df_all[df_all['magnitude'] >= mag_min_k].copy()
         if reg != "Todas":
             data = data[data['region'] == reg]
         data = data.dropna(subset=['lat','lon','magnitude','date_str'])
 
-        m = folium.Map(location=[-1.83, -78.18], zoom_start=7,
+        m = folium.Map(location=[CENTRO_MAPA_LAT, CENTRO_MAPA_LON], zoom_start=7,
                        tiles="CartoDB positron")
 
-        # Puntos históricos — máximo 300
-        hist = data.sample(min(300, len(data)), random_state=1)
+        # Puntos históricos — máximo para rendimiento
+        hist = data.sample(min(MAX_PUNTOS_HISTORICOS, len(data)), random_state=1)
         for _, row in hist.iterrows():
             folium.CircleMarker(
                 location=[row['lat'], row['lon']],

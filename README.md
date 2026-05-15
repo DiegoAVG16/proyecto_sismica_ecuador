@@ -135,10 +135,23 @@ El proyecto incluye un sistema completo de análisis sísmico con:
 
 ### Pipeline Técnico
 
-1. **Carga de datos**: `pd.read_csv(file, sep='\s+', comment='#')` — parsea formato no estándar
-2. **Conversión temporal**: `time_value` a datetime; extrae año, mes y categorías
+1. **Carga de datos**: `pd.read_csv(file, sep='\s+', comment='#')` — parsea formato no estándar del IG-EPN
+2. **Conversión temporal**: `time_value` a datetime; extrae año, mes, hora y categorías
 3. **Asignación de región**: `pd.cut(df['lat'], bins=[-5, -2, 0, 2], labels=['Sur','Centro','Norte'])`
-4. **Almacenamiento**: Guardar catálogo procesado en Parquet; usar `@st.cache_data` en Streamlit
+4. **Clasificación**: Magnitud (Ligero/Moderado/Fuerte) y profundidad (Superficial/Intermedio/Profundo)
+5. **Almacenamiento**: Guardar catálogo procesado en Parquet con compresión Snappy
+6. **Visualización**: `@st.cache_data` en Streamlit para rendimiento óptimo
+
+### Arquitectura del Código
+
+```
+02_scripts/
+├── config.py          # Configuración centralizada (dataclasses)
+├── utils.py           # Funciones auxiliares compartidas
+├── process_data.py    # Pipeline ETL con logging
+├── api.py             # API REST (FastAPI)
+└── app.py             # Dashboard interactivo (Streamlit)
+```
 
 ### API (FastAPI)
 
@@ -309,5 +322,5 @@ Datos públicos del Instituto Geofísico - Escuela Politécnica Nacional (IG-EPN
 
 ---
 
-**Última actualización**: 30 de abril de 2026
-Implementación completa del producto analítico: API FastAPI, pipeline de datos, documentación y mejoras en el dashboard
+**Última actualización**: 15 de mayo de 2026
+Refactorización del código: módulo de utilidades, configuración centralizada, type hints, logging y documentación mejorada
